@@ -17,13 +17,13 @@
 <body>
     <canvas id="unity-canvas"></canvas>
 
-    <script src="Build/Builds Creche.loader.js"></script>
+    <script src="Build/BuildsCreche.loader.js"></script>
     <script>
         var unityInst = null;
         createUnityInstance(document.querySelector("#unity-canvas"), {
-            dataUrl: "Build/Builds Creche.data",
-            frameworkUrl: "Build/Builds Creche.framework.js",
-            codeUrl: "Build/Builds Creche.wasm",
+            dataUrl: "Build/BuildsCreche.data",
+            frameworkUrl: "Build/BuildsCreche.framework.js",
+            codeUrl: "Build/BuildsCreche.wasm",
             streamingAssetsUrl: "StreamingAssets",
         }).then((instance) => { unityInst = instance; });
 
