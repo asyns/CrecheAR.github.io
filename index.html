@@ -38,9 +38,9 @@
     <script>
         var unityInst = null;
         createUnityInstance(document.querySelector("#unity-canvas"), {
-            dataUrl: "Build/BuildsCreche.data.unityweb",
-            frameworkUrl: "Build/BuildsCreche.framework.js.unityweb",
-            codeUrl: "Build/BuildsCreche.wasm.unityweb",
+            dataUrl: "Build/BuildsCreche.data",
+            frameworkUrl: "Build/BuildsCreche.framework.js",
+            codeUrl: "Build/BuildsCreche.wasm",
             streamingAssetsUrl: "StreamingAssets",
         }).then((instance) => { unityInst = instance; });
 
