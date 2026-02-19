@@ -38,12 +38,13 @@
     <script>
         var unityInst = null;
         createUnityInstance(document.querySelector("#unity-canvas"), {
-            dataUrl: "Build/BuildsCreche.data",
-            frameworkUrl: "Build/BuildsCreche.framework.js",
-            codeUrl: "Build/BuildsCreche.wasm",
+            dataUrl: "Build/BuildsCreche.data.unityweb",
+            frameworkUrl: "Build/BuildsCreche.framework.js.unityweb",
+            codeUrl: "Build/BuildsCreche.wasm.unityweb",
             streamingAssetsUrl: "StreamingAssets",
         }).then((instance) => { unityInst = instance; });
 
+        // Sent by ARObject through ARBridge.jslib
         window.addEventListener('unityReady', () => {
             startAR();
         });
@@ -59,12 +60,9 @@
             const arContext = new THREEx.ArToolkitContext({ 
                 detectionMode: 'mono'
             });
-            arSource.init(() => {
-                onResize();
-            });
 
             window.addEventListener('resize', onResize);
-            
+
             function onResize() {
                 arSource.onResize();
                 arSource.copySizeTo(renderer.domElement);
@@ -75,12 +73,13 @@
             }
 
             arSource.init(() => {
+                onResize();
                 setTimeout(() => { arContext.update(arSource.domElement); }, 2000);
             });
 
-            // Target your marker files in Build/data/
+            // Target marker (.fset, .fset3, .iset)
             const marker = new THREEx.ArMarkerControls(arContext, new THREE.Group(), {
-                type: 'nft', descriptorsUrl: 'data/pinball' 
+                type: 'nft', descriptorsUrl: 'data/01-coeur' 
             });
 
             function loop() {
@@ -88,6 +87,7 @@
                     arContext.update(arSource.domElement);
                     if (marker.object3d.visible) {
                         const m = marker.object3d.matrix.elements;
+                        console.log("marker object is visible, sending event to unity");
                         // JSON sent to the C# script on the 'ARObject' GameObject
                         unityInst.SendMessage('ARObject', 'OnTracked', JSON.stringify({
                             px: m[12], py: m[13], pz: m[14],
@@ -95,6 +95,7 @@
                             visible: true
                         }));
                     } else {
+                        console.log("marker object is not visible - sending event with visible=false");
                         unityInst.SendMessage('ARObject', 'OnTracked', '{"visible":false}');
                     }
                 }
