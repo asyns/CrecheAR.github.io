@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="https://raw.githack.com/AR-js-org/AR.js/master/three.js/build/ar-nft.js"></script>
+    <style>
+        /* This makes the Unity canvas float on top of the camera */
+        #unity-canvas { 
+            position: absolute; top: 0; left: 0; 
+            width: 100%; height: 100%; 
+            z-index: 10; 
+            background: transparent !important; 
+        }
+        /* This places the webcam feed behind everything */
+        .arjs-loader { position: absolute; z-index: 20; } 
+    </style>
+</head>
+<body>
+    <canvas id="unity-canvas"></canvas>
+
+    <script src="Build/Builds Creche.loader.js"></script>
+    <script>
+        var unityInst = null;
+        createUnityInstance(document.querySelector("#unity-canvas"), {
+            dataUrl: "Build/Builds Creche.data.unityweb",
+            frameworkUrl: "Build/Builds Creche.framework.js.unityweb",
+            codeUrl: "Build/Builds Creche.wasm.unityweb",
+            streamingAssetsUrl: "StreamingAssets",
+        }).then((instance) => { unityInst = instance; });
+
+        window.addEventListener('unityReady', () => {
+            const arSource = new THREEx.ArToolkitSource({ sourceType: 'webcam' });
+            const arContext = new THREEx.ArToolkitContext({ 
+                detectionMode: 'mono', 
+                canvasWidth: 640, canvasHeight: 480 
+            });
+
+            arSource.init(() => {
+                setTimeout(() => { arContext.update(arSource.domElement); }, 2000);
+            });
+
+            // Target your marker files in Build/data/
+            const marker = new THREEx.ArMarkerControls(arContext, new THREE.Group(), {
+                type: 'nft', descriptorsUrl: 'data/pinball' 
+            });
+
+            function loop() {
+                if (arSource.ready) {
+                    arContext.update(arSource.domElement);
+                    if (marker.object3d.visible) {
+                        const m = marker.object3d.matrix.elements;
+                        // JSON sent to the C# script on the 'ARObject' GameObject
+                        unityInst.SendMessage('ARObject', 'OnTracked', JSON.stringify({
+                            px: m[12], py: m[13], pz: m[14],
+                            qx: 0, qy: 0, qz: 0, qw: 1,
+                            visible: true
+                        }));
+                    } else {
+                        unityInst.SendMessage('ARObject', 'OnTracked', '{"visible":false}');
+                    }
+                }
+                requestAnimationFrame(loop);
+            }
+            loop();
+        });
+    </script>
+</body>
+</html>
