@@ -3,7 +3,21 @@
 <head>
     <!-- <script src="https://raw.githack.com/AR-js-org/AR.js/master/three.js/build/ar-nft.js"></script> -->
     <!-- <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@master/three.js/build/ar-nft.js"></script>  -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/ar.js/2.2.2/ar.js"></script>
+    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/ar.js/2.2.2/ar.js"></script> -->
+    <script>
+        (function() {
+            var script = document.createElement('script');
+            script.src = "https://cdn.jsdelivr.net/npm/@ar-js-org/ar.js@3.4.5/three.js/build/ar-nft.js";
+            script.crossOrigin = "anonymous"; // This tells the browser to allow Cross-Origin
+            script.onload = function() {
+                console.log("AR.js library loaded successfully.");
+            };
+            script.onerror = function() {
+                console.error("The browser is still blocking the script. Switching to Fallback...");
+            };
+            document.head.appendChild(script);
+        })();
+    </script>
     <style>
         /* This makes the Unity canvas float on top of the camera */
         #unity-canvas { 
