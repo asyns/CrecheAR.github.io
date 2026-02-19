@@ -31,6 +31,16 @@
         }).then((instance) => { unityInst = instance; });
 
         window.addEventListener('unityReady', () => {
+            startAR();
+        });
+
+        function startAR() {
+            if (typeof THREEx === "undefined") {
+                console.warn("AR.js still parsing... retrying in 100ms");
+                setTimeout(startAR, 100);
+                return;
+            }
+
             const arSource = new THREEx.ArToolkitSource({ sourceType: 'webcam' });
             const arContext = new THREEx.ArToolkitContext({ 
                 detectionMode: 'mono', 
@@ -64,7 +74,8 @@
                 requestAnimationFrame(loop);
             }
             loop();
-        });
+        }
+        
     </script>
 </body>
 </html>
