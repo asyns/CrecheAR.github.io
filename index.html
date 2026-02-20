@@ -119,7 +119,7 @@
             try {
                 const arSource = new THREEx.ArToolkitSource({ sourceType: 'webcam' });
                 const arContext = new THREEx.ArToolkitContext({ 
-                    detectionMode: 'mono', debug: true
+                    detectionMode: 'mono'
                 });
                 let marker;
 
@@ -155,21 +155,25 @@
                 arContext.init(() => {
                     addLogMessage("arContext initialized");
                     addLogMessage('arContext.arController: ' + (arContext.arController ? 'exists' : 'null'));
+                    initMarker();
                 });
-
-                // Target marker (.fset, .fset3, .iset)
-                addLogMessage("Loading marker from: data/pinball");
-                try {
-                    marker = new THREEx.ArMarkerControls(arContext, new THREE.Group(), {
-                        type: 'nft', descriptorsUrl: 'data/pinball' 
-                    });
-                    addLogMessage("Marker object created successfully");
-                } catch (markerError) {
-                    addLogMessage("ERROR creating marker: " + markerError.message);
-                    console.error("Marker error:", markerError);
+                
+                function initMarker(){
+                    // Target marker (.fset, .fset3, .iset)
+                    addLogMessage("Loading marker from: data/pinball");
+                    try {
+                        marker = new THREEx.ArMarkerControls(arContext, new THREE.Group(), {
+                            type: 'nft', descriptorsUrl: 'data/pinball' 
+                        });
+                        addLogMessage("Marker object created successfully");
+                        addLogMessage("Starting AR loop");
+                        loop();
+                    } catch (markerError) {
+                        addLogMessage("ERROR creating marker: " + markerError.message);
+                        console.error("Marker error:", markerError);
+                    }
                 }
 
-                addLogMessage("Starting AR loop");
                 let loopCounter = 0;
                 function loop() {
                     if (arSource.ready) {
@@ -182,13 +186,13 @@
                             // addLogMessage(`arController exists: ${hasArController} | marker exists: ${hasMarker}`);
                             
                             if (hasArController) {
-                                // addLogMessage(`arController.state: ${arContext.arController.state}`);
+                                addLogMessage(`arController.state: ${arContext.arController.state}`);
                             }
                             
                             if (hasMarker) {
                                 const m = marker.object3d.matrix.elements;
                                 const isVisible = marker.object3d.visible;
-                                // addLogMessage(`Visible: ${isVisible} | Pos: [${m[12].toFixed(2)}, ${m[13].toFixed(2)}, ${m[14].toFixed(2)}]`);
+                                addLogMessage(`Visible: ${isVisible} | Pos: [${m[12].toFixed(2)}, ${m[13].toFixed(2)}, ${m[14].toFixed(2)}]`);
                             }
                         }
                         
@@ -207,7 +211,6 @@
                     }
                     requestAnimationFrame(loop);
                 }
-                loop();
             } catch (error) {
                 addLogMessage("Exception in startAR: " + error.message);
                 console.error(error);
