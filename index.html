@@ -2,7 +2,10 @@
 <html>
 <head>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="ar-threex.js"></script> 
+    <!-- <script src="https://raw.githack.com/AR-js-org/AR.js/master/three.js/build/ar-nft.js"></script> -->
+    <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js/three.js/build/ar-nft.js"></script>
+    <!-- <script src="ar-threex.js"></script>  -->
+    <!-- <script src="ar.js"></script>  -->
     <style>
         /* This makes the Unity canvas float on top of the camera */
         #unity-canvas { 
@@ -29,65 +32,191 @@
             height: 100vh !important;
             object-fit: cover !important;
         }
+
+        #log-display {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 150px;
+            background-color: rgba(0, 0, 0, 0.7);
+            color: #00ff00;
+            font-family: monospace;
+            font-size: 12px;
+            padding: 10px;
+            overflow-y: auto;
+            z-index: 30;
+            border-top: 2px solid #00ff00;
+            box-sizing: border-box;
+        }
+
+        #log-display div {
+            margin: 2px 0;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            overflow: hidden;
+        }
     </style>
 </head>
 <body>
     <canvas id="unity-canvas"></canvas>
+    <div id="log-display"></div>
 
     <script src="Build/BuildsCreche.loader.js"></script>
     <script>
         var unityInst = null;
+        const MAX_LOG_LINES = 20;
+        const logQueue = [];
+        let marker;
+        const scene = new THREE.Scene();
+        const camera = new THREE.Camera();
+        camera.matrixAutoUpdate = false;    
+        scene.add(camera);
+        const renderer = new THREE.WebGLRenderer({
+            canvas: document.getElementById('unity-canvas'),
+            alpha: true
+        });
+
+
+
+        function addLogMessage(message) {
+            const logDisplay = document.getElementById('log-display');
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.textContent = `[${timestamp}] ${message}`;
+            logDisplay.appendChild(logEntry);
+            logQueue.push(logEntry);
+            console.log(message);
+
+            // Remove oldest messages if we exceed the max
+            while (logQueue.length > MAX_LOG_LINES) {
+                const oldEntry = logQueue.shift();
+                oldEntry.remove();
+            }
+
+            // Auto-scroll to bottom
+            logDisplay.scrollTop = logDisplay.scrollHeight;
+        }
+        
+        ////////////////////////////////////////////////////////////////////////////////
+        //          handle Unity instance
+        ////////////////////////////////////////////////////////////////////////////////
         createUnityInstance(document.querySelector("#unity-canvas"), {
             dataUrl: "Build/BuildsCreche.data",
             frameworkUrl: "Build/BuildsCreche.framework.js",
             codeUrl: "Build/BuildsCreche.wasm",
             streamingAssetsUrl: "StreamingAssets",
-        }).then((instance) => { unityInst = instance; });
+        }).then((instance) => { 
+            unityInst = instance; 
+            addLogMessage("Unity instance created successfully");
+        }).catch((error) => {
+            addLogMessage("Error creating Unity instance: " + error);
+        });
 
         // Sent by ARObject through ARBridge.jslib
         window.addEventListener('unityReady', () => {
-            startAR();
+            addLogMessage("unityReady event received, starting AR");
+            try {
+                startAR();
+            } catch (error) {
+                addLogMessage("Error in startAR: " + error.message);
+            }
         });
 
         function startAR() {
+            addLogMessage("startAR() called");
+            
             if (typeof THREEx === "undefined") {
-                console.warn("AR.js still parsing... retrying in 100ms");
+                addLogMessage("AR.js still parsing... retrying in 100ms");
                 setTimeout(startAR, 100);
                 return;
             }
 
+            ////////////////////////////////////////////////////////////////////////////////
+            //          handle arToolkitSource
+            ////////////////////////////////////////////////////////////////////////////////
             const arSource = new THREEx.ArToolkitSource({ sourceType: 'webcam' });
-            const arContext = new THREEx.ArToolkitContext({ 
-                detectionMode: 'mono'
+            addLogMessage("Initializing AR source");
+            arSource.init(() => {
+                addLogMessage("arSource initialized");
+                addLogMessage(`arSource.domElement type: ${arSource.domElement ? arSource.domElement.tagName : 'null'}`);
+                onResize();
             });
 
             window.addEventListener('resize', onResize);
-
             function onResize() {
-                arSource.onResize();
-                arSource.copySizeTo(renderer.domElement);
-
+                arSource.onResizeElement()
+                arSource.copyElementSizeTo(renderer.domElement)
                 if (arContext.arController !== null) {
-                    arSource.copySizeTo(arContext.arController.canvas);
+                    arSource.copyElementSizeTo(arContext.arController.canvas)
                 }
             }
 
-            arSource.init(() => {
-                onResize();
-                setTimeout(() => { arContext.update(arSource.domElement); }, 2000);
+            ////////////////////////////////////////////////////////////////////////////////
+            //          initialize arToolkitContext
+            ////////////////////////////////////////////////////////////////////////////////
+            const arContext = new THREEx.ArToolkitContext({ 
+                detectionMode: 'mono'
+            });
+            addLogMessage("Initializing AR context");
+            arContext.init(() => {
+                addLogMessage("arContext initialized");
+                addLogMessage('arContext.arController: ' + (arContext.arController ? 'exists' : 'null'));
+                camera.projectionMatrix.copy(arContext.getProjectionMatrix());
+                initMarker();
             });
 
-            // Target marker (.fset, .fset3, .iset)
-            const marker = new THREEx.ArMarkerControls(arContext, new THREE.Group(), {
-                type: 'nft', descriptorsUrl: 'data/01-coeur' 
-            });
+            
+            ////////////////////////////////////////////////////////////////////////////////
+            //          Create a ArMarkerControls
+            ////////////////////////////////////////////////////////////////////////////////
+            function initMarker(){
+                // Target marker (.fset, .fset3, .iset)
+                addLogMessage("Loading marker from: data/pinball");
+                try {
+                    marker = new THREEx.ArMarkerControls(arContext, camera, {
+                        type: 'nft',
+                        descriptorsUrl: 'data/pinball',
+                        changeMatrixMode: 'cameraTransformMatrix'
+                    });
+                    addLogMessage("Marker object created successfully");
+                    addLogMessage("Starting AR loop");
+                    loop();
+                } catch (markerError) {
+                    addLogMessage("ERROR creating marker: " + markerError.message);
+                    console.error("Marker error:", markerError);
+                }
+            }
 
+            let loopCounter = 0;
             function loop() {
                 if (arSource.ready) {
                     arContext.update(arSource.domElement);
-                    if (marker.object3d.visible) {
-                        const m = marker.object3d.matrix.elements;
-                        console.log("marker object is visible, sending event to unity");
+                    renderer.render(scene, camera);
+                    loopCounter++;
+                    
+                    if (loopCounter % 30 === 0) {
+                        const hasArController = arContext.arController !== null;
+                        const hasMarker = marker !== undefined && marker !== null;
+                        // addLogMessage(`arController exists: ${hasArController} | marker exists: ${hasMarker}`);
+                        
+                        // if (hasArController) {
+                        //     addLogMessage(`arController.keys: ${Object.keys(arContext.arController).join(', ')}`);
+                        // }
+                        
+                        if (hasMarker) {
+                            const m = camera.matrixWorld.elements;
+                            const isVisible = camera.visible;
+                            addLogMessage(`camera.visible: ${camera.visible}`);
+                            // addLogMessage(`marker.object3d.keys: ${Object.keys(marker.object3d).join(', ')}`);
+                            // addLogMessage(`Visible: ${isVisible} | Pos: [${m[12].toFixed(2)}, ${m[13].toFixed(2)}, ${m[14].toFixed(2)}]`);
+                        }
+                    }
+                    
+                    if (camera.visible) {
+                        const m = camera.matrixWorld.elements;
+                        // const m = marker.object3d.matrix.elements;
+                        // addLogMessage("marker object is visible, sending event to unity");
                         // JSON sent to the C# script on the 'ARObject' GameObject
                         unityInst.SendMessage('ARObject', 'OnTracked', JSON.stringify({
                             px: m[12], py: m[13], pz: m[14],
@@ -95,15 +224,12 @@
                             visible: true
                         }));
                     } else {
-                        console.log("marker object is not visible - sending event with visible=false");
                         unityInst.SendMessage('ARObject', 'OnTracked', '{"visible":false}');
                     }
                 }
                 requestAnimationFrame(loop);
             }
-            loop();
         }
-        
     </script>
 </body>
 </html>
