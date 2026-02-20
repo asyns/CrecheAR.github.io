@@ -29,14 +29,60 @@
             height: 100vh !important;
             object-fit: cover !important;
         }
+
+        #log-display {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 150px;
+            background-color: rgba(0, 0, 0, 0.7);
+            color: #00ff00;
+            font-family: monospace;
+            font-size: 12px;
+            padding: 10px;
+            overflow-y: auto;
+            z-index: 30;
+            border-top: 2px solid #00ff00;
+            box-sizing: border-box;
+        }
+
+        #log-display div {
+            margin: 2px 0;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            overflow: hidden;
+        }
     </style>
 </head>
 <body>
     <canvas id="unity-canvas"></canvas>
+    <div id="log-display"></div>
 
     <script src="Build/BuildsCreche.loader.js"></script>
     <script>
         var unityInst = null;
+        const MAX_LOG_LINES = 20;
+        const logQueue = [];
+
+        function addLogMessage(message) {
+            const logDisplay = document.getElementById('log-display');
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.textContent = `[${timestamp}] ${message}`;
+            logDisplay.appendChild(logEntry);
+            logQueue.push(logEntry);
+
+            // Remove oldest messages if we exceed the max
+            while (logQueue.length > MAX_LOG_LINES) {
+                const oldEntry = logQueue.shift();
+                oldEntry.remove();
+            }
+
+            // Auto-scroll to bottom
+            logDisplay.scrollTop = logDisplay.scrollHeight;
+        }
+
         createUnityInstance(document.querySelector("#unity-canvas"), {
             dataUrl: "Build/BuildsCreche.data",
             frameworkUrl: "Build/BuildsCreche.framework.js",
@@ -103,7 +149,6 @@
             }
             loop();
         }
-        
     </script>
 </body>
 </html>
