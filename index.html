@@ -143,10 +143,10 @@
                 });
 
                 // Target marker (.fset, .fset3, .iset)
-                addLogMessage("Loading marker from: data/01-coeur");
+                addLogMessage("Loading marker from: data/pinball");
                 try {
                     marker = new THREEx.ArMarkerControls(arContext, new THREE.Group(), {
-                        type: 'nft', descriptorsUrl: 'data/01-coeur' 
+                        type: 'nft', descriptorsUrl: 'data/pinball' 
                     });
                     addLogMessage("Marker object created successfully");
                 } catch (markerError) {
