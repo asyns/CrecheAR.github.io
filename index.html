@@ -135,14 +135,19 @@
 
                 arSource.init(() => {
                     addLogMessage("arSource initialized");
+                    addLogMessage(`arSource.domElement type: ${arSource.domElement ? arSource.domElement.tagName : 'null'}`);
                     onResize();
                     setTimeout(() => { 
                         addLogMessage("Calling arContext.update()");
                         try {
-                            arContext.update(arSource.domElement);
-                            addLogMessage(`arContext.update() called. arController exists: ${arContext.arController !== null}`);
+                            const videoElement = arSource.domElement;
+                            addLogMessage(`Video element tagName: ${videoElement.tagName}, width: ${videoElement.videoWidth}, height: ${videoElement.videoHeight}`);
+                            arContext.update(videoElement);
+                            addLogMessage(`arContext.update() called`);
+                            addLogMessage(`arContext keys: ${Object.keys(arContext).join(', ')}`);
                         } catch (updateError) {
                             addLogMessage("ERROR in arContext.update(): " + updateError.message);
+                            console.error(updateError);
                         }
                     }, 2000);
                 });
@@ -169,16 +174,16 @@
                         if (loopCounter % 30 === 0) {
                             const hasArController = arContext.arController !== null;
                             const hasMarker = marker !== undefined && marker !== null;
-                            addLogMessage(`arController exists: ${hasArController} | marker exists: ${hasMarker}`);
+                            // addLogMessage(`arController exists: ${hasArController} | marker exists: ${hasMarker}`);
                             
                             if (hasArController) {
-                                addLogMessage(`arController.state: ${arContext.arController.state}`);
+                                // addLogMessage(`arController.state: ${arContext.arController.state}`);
                             }
                             
                             if (hasMarker) {
                                 const m = marker.object3d.matrix.elements;
                                 const isVisible = marker.object3d.visible;
-                                addLogMessage(`Visible: ${isVisible} | Pos: [${m[12].toFixed(2)}, ${m[13].toFixed(2)}, ${m[14].toFixed(2)}]`);
+                                // addLogMessage(`Visible: ${isVisible} | Pos: [${m[12].toFixed(2)}, ${m[13].toFixed(2)}, ${m[14].toFixed(2)}]`);
                             }
                         }
                         
