@@ -121,14 +121,14 @@
                 const arContext = new THREEx.ArToolkitContext({ 
                     detectionMode: 'mono'
                 });
+                let marker;
 
                 window.addEventListener('resize', onResize);
 
                 function onResize() {
                     arSource.onResize();
-                    arSource.copySizeTo(renderer.domElement);
-
-                    if (arContext.arController !== null) {
+                    if (arContext.arController !== null && arContext.arController.renderer) {
+                        arSource.copySizeTo(arContext.arController.renderer.domElement);
                         arSource.copySizeTo(arContext.arController.canvas);
                     }
                 }
@@ -145,7 +145,7 @@
                 // Target marker (.fset, .fset3, .iset)
                 addLogMessage("Loading marker from: data/01-coeur");
                 try {
-                    const marker = new THREEx.ArMarkerControls(arContext, new THREE.Group(), {
+                    marker = new THREEx.ArMarkerControls(arContext, new THREE.Group(), {
                         type: 'nft', descriptorsUrl: 'data/01-coeur' 
                     });
                     addLogMessage("Marker object created successfully");
@@ -155,10 +155,20 @@
                 }
 
                 addLogMessage("Starting AR loop");
+                let loopCounter = 0;
                 function loop() {
                     if (arSource.ready) {
                         arContext.update(arSource.domElement);
-                        if (marker.object3d.visible) {
+                        loopCounter++;
+                        
+                        if (marker && loopCounter % 30 === 0) {
+                            const m = marker.object3d.matrix.elements;
+                            const isVisible = marker.object3d.visible;
+                            const confidence = marker.object3d.userData.confidence || "N/A";
+                            addLogMessage(`Visible: ${isVisible} | Pos: [${m[12].toFixed(2)}, ${m[13].toFixed(2)}, ${m[14].toFixed(2)}] | Confidence: ${confidence}`);
+                        }
+                        
+                        if (marker && marker.object3d.visible) {
                             const m = marker.object3d.matrix.elements;
                             addLogMessage("marker object is visible, sending event to unity");
                             // JSON sent to the C# script on the 'ARObject' GameObject
