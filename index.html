@@ -67,7 +67,6 @@
         var unityInst = null;
         const MAX_LOG_LINES = 20;
         const logQueue = [];
-<<<<<<< HEAD
         let marker;
         const scene = new THREE.Scene();
         const camera = new THREE.Camera();
@@ -79,8 +78,6 @@
         });
 
 
-=======
->>>>>>> e2da0ba22d9380ba447cb9c8fc66001e3f8a4ec5
 
         function addLogMessage(message) {
             const logDisplay = document.getElementById('log-display');
@@ -100,14 +97,10 @@
             // Auto-scroll to bottom
             logDisplay.scrollTop = logDisplay.scrollHeight;
         }
-<<<<<<< HEAD
         
         ////////////////////////////////////////////////////////////////////////////////
         //          handle Unity instance
         ////////////////////////////////////////////////////////////////////////////////
-=======
-
->>>>>>> e2da0ba22d9380ba447cb9c8fc66001e3f8a4ec5
         createUnityInstance(document.querySelector("#unity-canvas"), {
             dataUrl: "Build/BuildsCreche.data",
             frameworkUrl: "Build/BuildsCreche.framework.js",
@@ -139,7 +132,6 @@
                 return;
             }
 
-<<<<<<< HEAD
             ////////////////////////////////////////////////////////////////////////////////
             //          handle arToolkitSource
             ////////////////////////////////////////////////////////////////////////////////
@@ -157,68 +149,9 @@
                 arSource.copyElementSizeTo(renderer.domElement)
                 if (arContext.arController !== null) {
                     arSource.copyElementSizeTo(arContext.arController.canvas)
-=======
-            addLogMessage("Initializing AR source");
-            try {
-                const arSource = new THREEx.ArToolkitSource({ sourceType: 'webcam' });
-                const arContext = new THREEx.ArToolkitContext({ 
-                    detectionMode: 'mono'
-                });
-                let marker;
-
-                window.addEventListener('resize', onResize);
-
-                function onResize() {
-                    arSource.onResize();
-                    if (arContext.arController !== null && arContext.arController.renderer) {
-                        arSource.copySizeTo(arContext.arController.renderer.domElement);
-                        arSource.copySizeTo(arContext.arController.canvas);
-                    }
                 }
+            }
 
-                arSource.init(() => {
-                    addLogMessage("arSource initialized");
-                    addLogMessage(`arSource.domElement type: ${arSource.domElement ? arSource.domElement.tagName : 'null'}`);
-                    onResize();
-                    setTimeout(() => { 
-                        addLogMessage("Calling arContext.update()");
-                        try {
-                            const videoElement = arSource.domElement;
-                            addLogMessage(`Video element tagName: ${videoElement.tagName}, width: ${videoElement.videoWidth}, height: ${videoElement.videoHeight}`);
-                            arContext.update(videoElement);
-                            addLogMessage(`arContext.update() called`);
-                            addLogMessage(`arContext keys: ${Object.keys(arContext).join(', ')}`);
-                        } catch (updateError) {
-                            addLogMessage("ERROR in arContext.update(): " + updateError.message);
-                            console.error(updateError);
-                        }
-                    }, 2000);
-                });
-
-                arContext.init(() => {
-                    addLogMessage("arContext initialized");
-                    addLogMessage('arContext.arController: ' + (arContext.arController ? 'exists' : 'null'));
-                    initMarker();
-                });
-                
-                function initMarker(){
-                    // Target marker (.fset, .fset3, .iset)
-                    addLogMessage("Loading marker from: data/pinball");
-                    try {
-                        marker = new THREEx.ArMarkerControls(arContext, new THREE.Group(), {
-                            type: 'nft', descriptorsUrl: 'data/pinball' 
-                        });
-                        addLogMessage("Marker object created successfully");
-                        addLogMessage("Starting AR loop");
-                        loop();
-                    } catch (markerError) {
-                        addLogMessage("ERROR creating marker: " + markerError.message);
-                        console.error("Marker error:", markerError);
-                    }
->>>>>>> e2da0ba22d9380ba447cb9c8fc66001e3f8a4ec5
-                }
-
-<<<<<<< HEAD
             ////////////////////////////////////////////////////////////////////////////////
             //          initialize arToolkitContext
             ////////////////////////////////////////////////////////////////////////////////
@@ -292,49 +225,9 @@
                         }));
                     } else {
                         unityInst.SendMessage('ARObject', 'OnTracked', '{"visible":false}');
-=======
-                let loopCounter = 0;
-                function loop() {
-                    if (arSource.ready) {
-                        arContext.update(arSource.domElement);
-                        loopCounter++;
-                        
-                        if (loopCounter % 30 === 0) {
-                            const hasArController = arContext.arController !== null;
-                            const hasMarker = marker !== undefined && marker !== null;
-                            // addLogMessage(`arController exists: ${hasArController} | marker exists: ${hasMarker}`);
-                            
-                            if (hasArController) {
-                                addLogMessage(`arController.keys: ${Object.keys(arContext.arController).join(', ')}`);
-                            }
-                            
-                            if (hasMarker) {
-                                const m = marker.object3d.matrix.elements;
-                                const isVisible = marker.object3d.visible;
-                                addLogMessage(`marker.object3d.keys: ${Object.keys(marker.object3d).join(', ')}`);
-                                // addLogMessage(`Visible: ${isVisible} | Pos: [${m[12].toFixed(2)}, ${m[13].toFixed(2)}, ${m[14].toFixed(2)}]`);
-                            }
-                        }
-                        
-                        if (marker && marker.object3d.visible) {
-                            const m = marker.object3d.matrix.elements;
-                            // addLogMessage("marker object is visible, sending event to unity");
-                            // JSON sent to the C# script on the 'ARObject' GameObject
-                            unityInst.SendMessage('ARObject', 'OnTracked', JSON.stringify({
-                                px: m[12], py: m[13], pz: m[14],
-                                qx: 0, qy: 0, qz: 0, qw: 1,
-                                visible: true
-                            }));
-                        } else {
-                            unityInst.SendMessage('ARObject', 'OnTracked', '{"visible":false}');
-                        }
->>>>>>> e2da0ba22d9380ba447cb9c8fc66001e3f8a4ec5
                     }
-                    requestAnimationFrame(loop);
                 }
-            } catch (error) {
-                addLogMessage("Exception in startAR: " + error.message);
-                console.error(error);
+                requestAnimationFrame(loop);
             }
         }
     </script>
