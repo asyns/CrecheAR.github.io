@@ -143,8 +143,15 @@
                 });
 
                 // Target marker (.fset, .fset3, .iset)
+                addLogMessage("Loading marker from: data/01-coeur");
                 const marker = new THREEx.ArMarkerControls(arContext, new THREE.Group(), {
                     type: 'nft', descriptorsUrl: 'data/01-coeur' 
+                });
+                marker.object3d.addEventListener('markerFound', () => {
+                    addLogMessage("Marker FOUND!");
+                });
+                marker.object3d.addEventListener('markerLost', () => {
+                    addLogMessage("Marker LOST");
                 });
 
                 addLogMessage("Starting AR loop");
