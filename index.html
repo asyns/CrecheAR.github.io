@@ -156,9 +156,7 @@
 
                 addLogMessage("Starting AR loop");
                 function loop() {
-                    addLogMessage("AR loop tick");
                     if (arSource.ready) {
-                        addLogMessage("AR source is ready, updating context");
                         arContext.update(arSource.domElement);
                         if (marker.object3d.visible) {
                             const m = marker.object3d.matrix.elements;
@@ -170,7 +168,6 @@
                                 visible: true
                             }));
                         } else {
-                            addLogMessage("marker object is not visible - sending event with visible=false");
                             unityInst.SendMessage('ARObject', 'OnTracked', '{"visible":false}');
                         }
                     } else {
