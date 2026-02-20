@@ -144,15 +144,15 @@
 
                 // Target marker (.fset, .fset3, .iset)
                 addLogMessage("Loading marker from: data/01-coeur");
-                const marker = new THREEx.ArMarkerControls(arContext, new THREE.Group(), {
-                    type: 'nft', descriptorsUrl: 'data/01-coeur' 
-                });
-                marker.object3d.addEventListener('markerFound', () => {
-                    addLogMessage("Marker FOUND!");
-                });
-                marker.object3d.addEventListener('markerLost', () => {
-                    addLogMessage("Marker LOST");
-                });
+                try {
+                    const marker = new THREEx.ArMarkerControls(arContext, new THREE.Group(), {
+                        type: 'nft', descriptorsUrl: 'data/01-coeur' 
+                    });
+                    addLogMessage("Marker object created successfully");
+                } catch (markerError) {
+                    addLogMessage("ERROR creating marker: " + markerError.message);
+                    console.error("Marker error:", markerError);
+                }
 
                 addLogMessage("Starting AR loop");
                 function loop() {
@@ -170,8 +170,6 @@
                         } else {
                             unityInst.SendMessage('ARObject', 'OnTracked', '{"visible":false}');
                         }
-                    } else {
-                        addLogMessage("AR source not ready yet");
                     }
                     requestAnimationFrame(loop);
                 }
