@@ -67,7 +67,11 @@
         var unityInst = null;
         const MAX_LOG_LINES = 20;
         const logQueue = [];
+        
+        let arSource;
         let marker;
+        let arContext;
+
         const scene = new THREE.Scene();
         const camera = new THREE.Camera();
         camera.matrixAutoUpdate = false;    
@@ -76,7 +80,6 @@
             canvas: document.getElementById('unity-canvas'),
             alpha: true
         });
-
 
 
         function addLogMessage(message) {
@@ -135,7 +138,7 @@
             ////////////////////////////////////////////////////////////////////////////////
             //          handle arToolkitSource
             ////////////////////////////////////////////////////////////////////////////////
-            const arSource = new THREEx.ArToolkitSource({ sourceType: 'webcam' });
+            arSource = new THREEx.ArToolkitSource({ sourceType: 'webcam' });
             addLogMessage("Initializing AR source");
             arSource.init(() => {
                 addLogMessage("arSource initialized");
@@ -155,7 +158,7 @@
             ////////////////////////////////////////////////////////////////////////////////
             //          initialize arToolkitContext
             ////////////////////////////////////////////////////////////////////////////////
-            const arContext = new THREEx.ArToolkitContext({ 
+            arContext = new THREEx.ArToolkitContext({ 
                 detectionMode: 'mono'
             });
             addLogMessage("Initializing AR context");
