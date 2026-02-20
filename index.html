@@ -186,19 +186,20 @@
                             // addLogMessage(`arController exists: ${hasArController} | marker exists: ${hasMarker}`);
                             
                             if (hasArController) {
-                                addLogMessage(`arController.state: ${arContext.arController.state}`);
+                                addLogMessage(`arController.keys: ${Object.keys(arContext.arController).join(', ')}`);
                             }
                             
                             if (hasMarker) {
                                 const m = marker.object3d.matrix.elements;
                                 const isVisible = marker.object3d.visible;
-                                addLogMessage(`Visible: ${isVisible} | Pos: [${m[12].toFixed(2)}, ${m[13].toFixed(2)}, ${m[14].toFixed(2)}]`);
+                                addLogMessage(`marker.object3d.keys: ${Object.keys(marker.object3d).join(', ')}`);
+                                // addLogMessage(`Visible: ${isVisible} | Pos: [${m[12].toFixed(2)}, ${m[13].toFixed(2)}, ${m[14].toFixed(2)}]`);
                             }
                         }
                         
                         if (marker && marker.object3d.visible) {
                             const m = marker.object3d.matrix.elements;
-                            addLogMessage("marker object is visible, sending event to unity");
+                            // addLogMessage("marker object is visible, sending event to unity");
                             // JSON sent to the C# script on the 'ARObject' GameObject
                             unityInst.SendMessage('ARObject', 'OnTracked', JSON.stringify({
                                 px: m[12], py: m[13], pz: m[14],
