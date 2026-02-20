@@ -192,28 +192,25 @@
             function loop() {
                 if (arSource.ready) {
                     arContext.update(arSource.domElement);
-                    renderer.render(scene, camera);
                     loopCounter++;
-                    
+
                     if (loopCounter % 30 === 0) {
                         const hasArController = arContext.arController !== null;
                         const hasMarker = marker !== undefined && marker !== null;
-                        // addLogMessage(`arController exists: ${hasArController} | marker exists: ${hasMarker}`);
-                        
+
                         // if (hasArController) {
                         //     addLogMessage(`arController.keys: ${Object.keys(arContext.arController).join(', ')}`);
                         // }
-                        
+
                         if (hasMarker) {
-                            const m = camera.matrixWorld.elements;
-                            const isVisible = camera.visible;
-                            addLogMessage(`camera.visible: ${camera.visible}`);
-                            // addLogMessage(`marker.object3d.keys: ${Object.keys(marker.object3d).join(', ')}`);
-                            // addLogMessage(`Visible: ${isVisible} | Pos: [${m[12].toFixed(2)}, ${m[13].toFixed(2)}, ${m[14].toFixed(2)}]`);
+                            const isVisible = marker.object3d.visible;
+                            addLogMessage(`marker.object3d.visible: ${isVisible}`);
+                            addLogMessage(`marker.object3d.keys: ${Object.keys(marker.object3d).join(', ')}`);
                         }
                     }
-                    
-                    if (camera.visible) {
+
+                    // if (camera.visible) {
+                    if (marker && marker.object3d.visible) {
                         const m = camera.matrixWorld.elements;
                         // const m = marker.object3d.matrix.elements;
                         // addLogMessage("marker object is visible, sending event to unity");
