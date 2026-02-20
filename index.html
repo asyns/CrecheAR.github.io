@@ -152,6 +152,11 @@
                     }, 2000);
                 });
 
+                arContext.init(() => {
+                    addLogMessage("arContext initialized");
+                    addLogMessage('arContext.arController: ' + (arContext.arController ? 'exists' : 'null'));
+                });
+
                 // Target marker (.fset, .fset3, .iset)
                 addLogMessage("Loading marker from: data/pinball");
                 try {
