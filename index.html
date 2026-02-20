@@ -137,8 +137,13 @@
                     addLogMessage("arSource initialized");
                     onResize();
                     setTimeout(() => { 
-                        addLogMessage("Updating arContext");
-                        arContext.update(arSource.domElement); 
+                        addLogMessage("Calling arContext.update()");
+                        try {
+                            arContext.update(arSource.domElement);
+                            addLogMessage(`arContext.update() called. arController exists: ${arContext.arController !== null}`);
+                        } catch (updateError) {
+                            addLogMessage("ERROR in arContext.update(): " + updateError.message);
+                        }
                     }, 2000);
                 });
 
