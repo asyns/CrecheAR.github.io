@@ -73,9 +73,13 @@
         let arContext;
 
         const scene = new THREE.Scene();
-        const camera = new THREE.Camera();
+
+        let fov = (0.8 * 180) / Math.PI;
+        let ratio = 640 / 480;
+        const camera = new THREE.PerspectiveCamera(fov, ratio);
         camera.matrixAutoUpdate = false;    
         scene.add(camera);
+
         const renderer = new THREE.WebGLRenderer({
             canvas: document.getElementById('unity-canvas'),
             alpha: true
@@ -147,6 +151,7 @@
             });
 
             window.addEventListener('resize', onResize);
+
             function onResize() {
                 arSource.onResizeElement()
                 arSource.copyElementSizeTo(renderer.domElement)
@@ -155,16 +160,23 @@
                 }
             }
 
+            // listener for end loading of NFT marker
+            window.addEventListener('arjs-nft-loaded', function(ev){
+                console.log(ev);
+            });
+
             ////////////////////////////////////////////////////////////////////////////////
             //          initialize arToolkitContext
             ////////////////////////////////////////////////////////////////////////////////
+            
             arContext = new THREEx.ArToolkitContext({ 
                 detectionMode: 'mono'
             });
+
             addLogMessage("Initializing AR context");
             arContext.init(() => {
                 addLogMessage("arContext initialized");
-                addLogMessage('arContext.arController: ' + (arContext.arController ? 'exists' : 'null'));
+                // addLogMessage('arContext.arController: ' + (arContext.arController ? 'exists' : 'null'));
                 camera.projectionMatrix.copy(arContext.getProjectionMatrix());
                 initMarker();
             });
@@ -197,23 +209,25 @@
                     arContext.update(arSource.domElement);
                     loopCounter++;
 
+                    const isCameraVisible = camera.visible;
+                    const isVisible = marker.object3d.visible;
+
                     if (loopCounter % 30 === 0) {
-                        const hasArController = arContext.arController !== null;
-                        const hasMarker = marker !== undefined && marker !== null;
+                        addLogMessage(`marker.object3d.visible: ${isVisible} - camera.visible: ${isCameraVisible}`);
+                        // const hasArController = arContext.arController !== null;
+                        // const hasMarker = marker !== undefined && marker !== null;
 
                         // if (hasArController) {
                         //     addLogMessage(`arController.keys: ${Object.keys(arContext.arController).join(', ')}`);
                         // }
 
-                        if (hasMarker) {
-                            const isVisible = marker.object3d.visible;
-                            addLogMessage(`marker.object3d.visible: ${isVisible}`);
-                            addLogMessage(`marker.object3d.keys: ${Object.keys(marker.object3d).join(', ')}`);
-                        }
+                        // if (hasMarker) {
+                        //     addLogMessage(`marker.object3d.keys: ${Object.keys(marker.object3d).join(', ')}`);
+                        // }
                     }
 
                     // if (camera.visible) {
-                    if (marker && marker.object3d.visible) {
+                    if (isVisible || isCameraVisible) {
                         const m = camera.matrixWorld.elements;
                         // const m = marker.object3d.matrix.elements;
                         // addLogMessage("marker object is visible, sending event to unity");
